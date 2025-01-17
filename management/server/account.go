@@ -1563,10 +1563,14 @@ func (am *DefaultAccountManager) SyncAndMarkPeer(ctx context.Context, accountID 
 		return nil, nil, nil, fmt.Errorf("error syncing peer: %w", err)
 	}
 
+	log.WithContext(ctx).Debugf("peer synced")
+
 	err = am.MarkPeerConnected(ctx, peerPubKey, true, realIP, accountID)
 	if err != nil {
 		log.WithContext(ctx).Warnf("failed marking peer as connected %s %v", peerPubKey, err)
 	}
+
+	log.WithContext(ctx).Debugf("marked peer connected")
 
 	return peer, netMap, postureChecks, nil
 }

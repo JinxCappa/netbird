@@ -162,6 +162,8 @@ func (s *GRPCServer) Sync(req *proto.EncryptedMessage, srv proto.ManagementServi
 		}
 	}()
 
+	log.WithContext(ctx).Tracef("acquired peer lock")
+
 	accountID, err := s.accountManager.GetAccountIDForPeerKey(ctx, peerKey.String())
 	if err != nil {
 		// nolint:staticcheck
@@ -173,11 +175,15 @@ func (s *GRPCServer) Sync(req *proto.EncryptedMessage, srv proto.ManagementServi
 		return err
 	}
 
+	log.WithContext(ctx).Tracef("got account id")
+
 	// nolint:staticcheck
 	ctx = context.WithValue(ctx, nbContext.AccountIDKey, accountID)
 
 	realIP := getRealIP(ctx)
 	log.WithContext(ctx).Debugf("Sync request from peer [%s] [%s]", req.WgPubKey, realIP.String())
+
+	log.WithContext(ctx).Debugf("got real ip")
 
 	if syncReq.GetMeta() == nil {
 		log.WithContext(ctx).Tracef("peer system meta has to be provided on sync. Peer %s, remote addr %s", peerKey.String(), realIP)
@@ -189,15 +195,21 @@ func (s *GRPCServer) Sync(req *proto.EncryptedMessage, srv proto.ManagementServi
 		return mapError(ctx, err)
 	}
 
+	log.WithContext(ctx).Debugf("synced and marked peer")
+
 	err = s.sendInitialSync(ctx, peerKey, peer, netMap, postureChecks, srv)
 	if err != nil {
 		log.WithContext(ctx).Debugf("error while sending initial sync for %s: %v", peerKey.String(), err)
 		return err
 	}
 
+	log.WithContext(ctx).Debugf("send initial sync")
+
 	updates := s.peersUpdateManager.CreateChannel(ctx, peer.ID)
 
 	s.ephemeralManager.OnPeerConnected(ctx, peer)
+
+	log.WithContext(ctx).Debugf("peer connected")
 
 	s.secretsManager.SetupRefresh(ctx, peer.ID)
 
@@ -688,10 +700,14 @@ func (s *GRPCServer) sendInitialSync(ctx context.Context, peerKey wgtypes.Key, p
 		}
 	}
 
+	log.WithContext(ctx).Debugf("got relay token")
+
 	settings, err := s.settingsManager.GetSettings(ctx, peer.AccountID, peer.UserID)
 	if err != nil {
 		return status.Errorf(codes.Internal, "error handling request")
 	}
+
+	log.WithContext(ctx).Debugf("got account settings")
 
 	plainResp := toSyncResponse(ctx, s.config, peer, turnToken, relayToken, networkMap, s.accountManager.GetDNSDomain(), postureChecks, nil, settings.RoutingPeerDNSResolutionEnabled)
 
