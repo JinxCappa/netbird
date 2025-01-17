@@ -764,6 +764,9 @@ func (am *DefaultAccountManager) LoginPeer(ctx context.Context, login PeerLogin)
 		return am.handlePeerLoginNotFound(ctx, login, err)
 	}
 
+	unlockAccount := am.Store.AcquireReadLockByUID(ctx, accountID)
+	defer unlockAccount()
+
 	// when the client sends a login request with a JWT which is used to get the user ID,
 	// it means that the client has already checked if it needs login and had been through the SSO flow
 	// so, we can skip this check and directly proceed with the login
@@ -774,8 +777,6 @@ func (am *DefaultAccountManager) LoginPeer(ctx context.Context, login PeerLogin)
 		}
 	}
 
-	unlockAccount := am.Store.AcquireReadLockByUID(ctx, accountID)
-	defer unlockAccount()
 	unlockPeer := am.Store.AcquireWriteLockByUID(ctx, login.WireGuardPubKey)
 	defer func() {
 		if unlockPeer != nil {

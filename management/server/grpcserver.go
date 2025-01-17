@@ -173,6 +173,13 @@ func (s *GRPCServer) Sync(req *proto.EncryptedMessage, srv proto.ManagementServi
 		return err
 	}
 
+	accountUnlock := s.accountManager.(*DefaultAccountManager).Store.AcquireReadLockByUID(ctx, accountID)
+	defer func() {
+		if accountUnlock != nil {
+			accountUnlock()
+		}
+	}()
+
 	// nolint:staticcheck
 	ctx = context.WithValue(ctx, nbContext.AccountIDKey, accountID)
 
@@ -207,6 +214,9 @@ func (s *GRPCServer) Sync(req *proto.EncryptedMessage, srv proto.ManagementServi
 
 	unlock()
 	unlock = nil
+
+	accountUnlock()
+	accountUnlock = nil
 
 	log.WithContext(ctx).Debugf("Sync: took %v", time.Since(reqStart))
 
