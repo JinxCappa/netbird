@@ -490,10 +490,10 @@ func (am *DefaultAccountManager) peerLoginExpirationJob(ctx context.Context, acc
 }
 
 func (am *DefaultAccountManager) checkAndSchedulePeerLoginExpiration(ctx context.Context, accountID string) {
-	am.peerLoginExpiry.Cancel(ctx, []string{accountID})
-	if nextRun, ok := am.getNextPeerExpiration(ctx, accountID); ok {
-		go am.peerLoginExpiry.Schedule(ctx, nextRun, accountID, am.peerLoginExpirationJob(ctx, accountID))
-	}
+	// am.peerLoginExpiry.Cancel(ctx, []string{accountID})
+	// if nextRun, ok := am.getNextPeerExpiration(ctx, accountID); ok {
+	// 	go am.peerLoginExpiry.Schedule(ctx, nextRun, accountID, am.peerLoginExpirationJob(ctx, accountID))
+	// }
 }
 
 // peerInactivityExpirationJob marks login expired for all inactive peers and returns the minimum duration in which the next peer of the account will expire by inactivity if found
@@ -526,10 +526,10 @@ func (am *DefaultAccountManager) peerInactivityExpirationJob(ctx context.Context
 
 // checkAndSchedulePeerInactivityExpiration periodically checks for inactive peers to end their sessions
 func (am *DefaultAccountManager) checkAndSchedulePeerInactivityExpiration(ctx context.Context, accountID string) {
-	am.peerInactivityExpiry.Cancel(ctx, []string{accountID})
-	if nextRun, ok := am.getNextInactivePeerExpiration(ctx, accountID); ok {
-		go am.peerInactivityExpiry.Schedule(ctx, nextRun, accountID, am.peerInactivityExpirationJob(ctx, accountID))
-	}
+	// am.peerInactivityExpiry.Cancel(ctx, []string{accountID})
+	// if nextRun, ok := am.getNextInactivePeerExpiration(ctx, accountID); ok {
+	// 	go am.peerInactivityExpiry.Schedule(ctx, nextRun, accountID, am.peerInactivityExpirationJob(ctx, accountID))
+	// }
 }
 
 // newAccount creates a new Account with a generated ID and generated default setup keys.
