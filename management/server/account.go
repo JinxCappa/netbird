@@ -1553,8 +1553,6 @@ func (am *DefaultAccountManager) SyncAndMarkPeer(ctx context.Context, accountID 
 		log.WithContext(ctx).Debugf("SyncAndMarkPeer: took %v", time.Since(start))
 	}()
 
-	accountUnlock := am.Store.AcquireReadLockByUID(ctx, accountID)
-	defer accountUnlock()
 	peerUnlock := am.Store.AcquireWriteLockByUID(ctx, peerPubKey)
 	defer peerUnlock()
 
